@@ -38,7 +38,9 @@ Plataforma que conecta clientes a prestadores de serviço. Clientes solicitam se
 ./mvnw spring-boot:run
 ```
 
-Acessar em `http://localhost:8080/`.
+Acessar em `https://conecta-local-jsdm.onrender.com` (host pode nao funcionar, rodar local é aconselhado).
+
+em `http://localhost:8080/`. 
 
 Console H2 em `/h2-console` — JDBC: `jdbc:h2:mem:servicosdb`.
 
