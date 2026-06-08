@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Meus Pedidos')}"></head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+
+    <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+    <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
+
+        <div th:replace="~{fragments/layout :: header('Meus Pedidos')}"></div>
+
+        <main class="p-6 md:p-8 flex-grow max-w-7xl mx-auto w-full">
+
+            <div class="mb-8">
+                <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight">Meus Pedidos</h3>
+                <p class="text-slate-500 text-sm">Acompanhe todos os serviços que você solicitou.</p>
+            </div>
+
+            <div th:if="${#lists.isEmpty(solicitacoes)}" class="p-12 text-center rounded-2xl bg-white border border-slate-100 shadow-sm">
+                <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="inbox" class="w-8 h-8"></i>
+                </div>
+                <h4 class="text-base font-bold text-slate-900 mb-1">Nenhum pedido encontrado</h4>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto">Você ainda não solicitou nenhum serviço. Acesse a Lista de Serviços para fazer seu primeiro pedido.</p>
+                <a href="/servicos" class="inline-block mt-4 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-brand-500/10">Ver Serviços Disponíveis</a>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(solicitacoes)}" class="space-y-4">
+                <div th:each="s : ${solicitacoes}" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 hover:shadow-md transition-all">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <h5 class="text-base font-extrabold text-slate-900" th:text="${s.servico.nome}">Serviço</h5>
+                                <div>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).PENDENTE}" class="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 font-bold rounded-lg uppercase text-[10px]">Pendente</span>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).EM_ANDAMENTO}" class="px-2 py-0.5 bg-sky-50 border border-sky-200 text-sky-700 font-bold rounded-lg uppercase text-[10px]">Em Andamento</span>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).FINALIZADA}" class="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold rounded-lg uppercase text-[10px]">Concluído</span>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).CANCELADA}" class="px-2 py-0.5 bg-rose-50 border border-rose-200 text-rose-700 font-bold rounded-lg uppercase text-[10px]">Cancelado</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Profissional</span>
+                                    <span class="font-semibold text-slate-800" th:text="${s.servico.profissional}">Profissional</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Data / Horário</span>
+                                    <span class="font-semibold text-slate-800" th:text="${#temporals.format(s.dataAtendimento, 'dd/MM/yyyy')} + ' às ' + ${s.horarioAtendimento}">Data</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Protocolo</span>
+                                    <span class="font-mono text-xs font-bold text-brand-600" th:text="${s.protocolo}">PROT</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                                <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider mb-1">Endereço</span>
+                                <span class="text-xs text-slate-700" th:text="${s.endereco}">Endereço</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex items-center gap-3">
+                        <a th:href="@{/protocolo(codigo=${s.protocolo})}" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-brand-500/10 flex items-center gap-1.5">
+                            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                            <span>Acompanhar</span>
+                        </a>
+                        <form th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).PENDENTE}" action="/protocolo/status" method="post" style="display:inline" onsubmit="return confirm('Tem certeza que deseja cancelar esta solicitação?')">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="hidden" name="id" th:value="${s.id}">
+                            <input type="hidden" name="status" value="CANCELADA">
+                            <input type="hidden" name="redirect" value="/meus-pedidos">
+                            <button type="submit" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5">
+                                <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                                <span>Cancelar</span>
+                            </button>
+                        </form>
+                        <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).FINALIZADA}" class="text-xs text-emerald-600 font-semibold flex items-center gap-1.5">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            Serviço concluído
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        document.addEventListener("DOMContentLoaded", function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

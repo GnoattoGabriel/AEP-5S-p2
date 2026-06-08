@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Agenda do Prestador')}"></head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+    <!-- Main Content -->
+    <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
+        
+        <!-- Header -->
+        <div th:replace="~{fragments/layout :: header('Agenda do Prestador')}"></div>
+
+        <!-- Main Body -->
+        <main class="p-6 md:p-8 flex-grow max-w-7xl mx-auto w-full">
+            
+            <!-- Page Intro -->
+            <div class="mb-8">
+                <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight">Minha Agenda</h3>
+                <p class="text-slate-500 text-sm">Visualize os atendimentos agendados para hoje e planeje-se para os próximos compromissos.</p>
+            </div>
+
+            <!-- SECTION 1: ATENDIMENTOS DE HOJE -->
+            <div class="mb-10">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="play-circle" class="w-5 h-5 text-brand-600"></i>
+                        <span>Atendimentos de Hoje</span>
+                    </h4>
+                    <span class="px-2.5 py-1 bg-brand-50 text-brand-700 text-xs font-bold rounded-lg"
+                          th:text="${#temporals.format(dataHoje, 'dd/MM/yyyy')}">07/06/2026</span>
+                </div>
+
+                <!-- Empty state for Today's Appointments -->
+                <div th:if="${#lists.isEmpty(hoje)}" class="p-8 text-center rounded-2xl bg-white border border-slate-100 shadow-sm">
+                    <div class="w-12 h-12 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i data-lucide="calendar-x" class="w-5 h-5"></i>
+                    </div>
+                    <h5 class="text-xs font-bold text-slate-800">Nenhum atendimento programado para hoje</h5>
+                    <p class="text-[11px] text-slate-400 mt-1">Aproveite o tempo para organizar ferramentas ou conferir os próximos dias.</p>
+                </div>
+
+                <!-- List of Today's Appointments -->
+                <div th:unless="${#lists.isEmpty(hoje)}" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Today appointment card -->
+                    <div th:each="s : ${hoje}" class="bg-white rounded-2xl border border-slate-100 hover:border-brand-100 shadow-sm hover:shadow-md transition-all p-6 flex flex-col justify-between">
+                        <div>
+                            <!-- Time & Status Badge -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-1.5 text-slate-900 font-extrabold text-sm">
+                                    <i data-lucide="clock" class="w-4 h-4 text-brand-600"></i>
+                                    <span th:text="${s.horarioAtendimento}">09:00</span>
+                                </div>
+                                
+                                <!-- Status Badges mapping -->
+                                <div>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).PENDENTE}" class="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 font-bold rounded-lg uppercase text-[10px]">Pendente</span>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).EM_ANDAMENTO}" class="px-2 py-0.5 bg-sky-50 border border-sky-200 text-sky-700 font-bold rounded-lg uppercase text-[10px]">Em Andamento</span>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).FINALIZADA}" class="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold rounded-lg uppercase text-[10px]">Finalizada</span>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).CANCELADA}" class="px-2 py-0.5 bg-rose-50 border border-rose-200 text-rose-700 font-bold rounded-lg uppercase text-[10px]">Cancelada</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Customer & Service -->
+                            <h5 class="text-base font-extrabold text-slate-900 mb-1" th:text="${s.servico.nome}">Serviço</h5>
+                            <div class="flex items-center gap-1.5 text-sm font-bold text-emerald-600 mb-3">
+                                <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i>
+                                <span th:text="${#numbers.formatCurrency(s.servico.valor)}">R$ 0,00</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-xs text-slate-600 mb-4">
+                                <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <span class="font-semibold" th:text="${s.nomeCliente}">Cliente</span>
+                            </div>
+                            
+                            <!-- Location and protocol details -->
+                            <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl space-y-2 text-xs text-slate-500 mb-4">
+                                <div class="flex items-start gap-1.5">
+                                    <i data-lucide="map-pin" class="w-4 h-4 text-slate-400 shrink-0 mt-0.5"></i>
+                                    <span class="font-medium text-slate-700" th:text="${s.endereco}">Rua das Cerejeiras, 401</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-200/50">
+                                    <i data-lucide="shield" class="w-3.5 h-3.5 text-slate-400"></i>
+                                    <span class="font-mono text-[10px]" th:text="'Protocolo: ' + ${s.protocolo}">Protocolo</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card action -->
+                        <div class="flex items-center justify-between gap-4 pt-2">
+                            <!-- Link Google Maps -->
+                            <a th:href="'https://www.google.com/maps/search/?api=1&query=' + ${#uris.escapeQueryParam(s.endereco)}" 
+                               target="_blank" 
+                               class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5">
+                                <i data-lucide="navigation" class="w-3.5 h-3.5"></i>
+                                <span>Ver no Maps</span>
+                            </a>
+                            
+                            <a th:href="@{/protocolo(codigo=${s.protocolo})}" 
+                               class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                                <span>Gerenciar</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: PROXIMOS AGENDAMENTOS -->
+            <div>
+                <h4 class="text-base font-bold text-slate-900 flex items-center gap-2 mb-4">
+                    <i data-lucide="calendar" class="w-5 h-5 text-brand-600"></i>
+                    <span>Próximos Agendamentos</span>
+                </h4>
+
+                <!-- Empty state for Future Appointments -->
+                <div th:if="${#lists.isEmpty(proximos)}" class="p-8 text-center rounded-2xl bg-white border border-slate-100 shadow-sm">
+                    <div class="w-12 h-12 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                    </div>
+                    <h5 class="text-xs font-bold text-slate-800">Nenhum atendimento futuro cadastrado</h5>
+                    <p class="text-[11px] text-slate-400 mt-1">Divulgue seus serviços para preencher sua agenda!</p>
+                </div>
+
+                <!-- Table for Future Appointments -->
+                <div th:unless="${#lists.isEmpty(proximos)}" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-slate-50/50 border-b border-slate-100 text-slate-400 text-xs font-bold uppercase tracking-wider">
+                                    <th class="px-6 py-4">Data / Hora</th>
+                                    <th class="px-6 py-4">Cliente</th>
+                                    <th class="px-6 py-4">Serviço</th>
+                                    <th class="px-6 py-4">Valor</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4">Protocolo</th>
+                                    <th class="px-6 py-4 text-right">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-slate-700">
+                                <tr th:each="s : ${proximos}" class="hover:bg-slate-50/50 transition-colors">
+                                    <!-- Date & Time -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-extrabold text-slate-900" th:text="${#temporals.format(s.dataAtendimento, 'dd/MM/yyyy')}">08/06</div>
+                                        <div class="text-[11px] text-slate-400" th:text="${s.horarioAtendimento}">10:00</div>
+                                    </td>
+                                    
+                                    <!-- Customer Name -->
+                                    <td class="px-6 py-4 font-semibold text-slate-850" th:text="${s.nomeCliente}">Nome</td>
+                                    
+                                    <!-- Service name -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-bold text-brand-600" th:text="${s.servico.nome}">Serviço</div>
+                                        <div class="text-[10px] text-slate-400" th:text="'Profissional: ' + ${s.servico.profissional}">Carlos</div>
+                                    </td>
+                                    
+                                    <!-- Valor -->
+                                    <td class="px-6 py-4 whitespace-nowrap font-bold text-emerald-600" th:text="${#numbers.formatCurrency(s.servico.valor)}">R$ 0,00</td>
+                                    
+                                    <!-- Status -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).PENDENTE}" class="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 font-bold rounded-lg uppercase text-[10px]">Pendente</span>
+                                        <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).EM_ANDAMENTO}" class="px-2 py-0.5 bg-sky-50 border border-sky-200 text-sky-700 font-bold rounded-lg uppercase text-[10px]">Em Andamento</span>
+                                        <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).FINALIZADA}" class="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold rounded-lg uppercase text-[10px]">Finalizada</span>
+                                        <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).CANCELADA}" class="px-2 py-0.5 bg-rose-50 border border-rose-200 text-rose-700 font-bold rounded-lg uppercase text-[10px]">Cancelada</span>
+                                    </td>
+                                    
+                                    <!-- Protocol -->
+                                    <td class="px-6 py-4 font-mono text-xs text-slate-500 whitespace-nowrap" th:text="${s.protocolo}">PROT-123</td>
+                                    
+                                    <!-- Actions -->
+                                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                                        <div class="flex items-center justify-end gap-3">
+                                            <a th:href="'https://www.google.com/maps/search/?api=1&query=' + ${#uris.escapeQueryParam(s.endereco)}" 
+                                               target="_blank" title="Ver no Google Maps"
+                                               class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 rounded-lg transition-all">
+                                                <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                            </a>
+                                            <a th:href="@{/protocolo(codigo=${s.protocolo})}" 
+                                               class="p-1.5 bg-brand-50 hover:bg-brand-600 text-brand-600 hover:text-white rounded-lg transition-all" title="Gerenciar Protocolo">
+                                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toggle Sidebar Script -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

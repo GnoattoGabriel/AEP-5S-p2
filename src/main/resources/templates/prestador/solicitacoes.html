@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Solicitações Recebidas')}"></head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+
+    <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+    <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
+        
+        <div th:replace="~{fragments/layout :: header('Solicitações Recebidas')}"></div>
+
+        <main class="p-6 md:p-8 flex-grow max-w-7xl mx-auto w-full">
+            
+            <div class="mb-8">
+                <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight">Solicitações Recebidas</h3>
+                <p class="text-slate-500 text-sm">Clientes solicitaram seus serviços. Aceite ou recuse as solicitações.</p>
+            </div>
+
+            <div th:if="${#lists.isEmpty(solicitacoes)}" class="p-12 text-center rounded-2xl bg-white border border-slate-100 shadow-sm">
+                <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="inbox" class="w-8 h-8"></i>
+                </div>
+                <h4 class="text-base font-bold text-slate-900 mb-1">Nenhuma solicitação recebida</h4>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto">As solicitações de clientes aparecerão aqui.</p>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(solicitacoes)}" class="space-y-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-slate-500 font-medium" th:text="${#lists.size(solicitacoes)} + ' solicitação(ões)'"></span>
+                    <form method="get" action="/prestador/solicitacoes" class="flex items-center gap-2">
+                        <label class="text-xs text-slate-500 font-bold uppercase tracking-wider">Ordenar</label>
+                        <select name="ordenar" onchange="this.form.submit()" class="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="data_desc" th:selected="${ordenar == 'data_desc'}">Mais recentes</option>
+                            <option value="data_asc" th:selected="${ordenar == 'data_asc'}">Mais antigos</option>
+                            <option value="nome_asc" th:selected="${ordenar == 'nome_asc'}">Cliente A-Z</option>
+                            <option value="nome_desc" th:selected="${ordenar == 'nome_desc'}">Cliente Z-A</option>
+                        </select>
+                    </form>
+                </div>
+                <div th:each="s : ${solicitacoes}" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 hover:shadow-md transition-all">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <h5 class="text-base font-extrabold text-slate-900" th:text="${s.servico.nome}">Serviço</h5>
+                                <div>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).PENDENTE}" class="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 font-bold rounded-lg uppercase text-[10px]">Pendente</span>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).EM_ANDAMENTO}" class="px-2 py-0.5 bg-sky-50 border border-sky-200 text-sky-700 font-bold rounded-lg uppercase text-[10px]">Em Andamento</span>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).FINALIZADA}" class="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold rounded-lg uppercase text-[10px]">Finalizada</span>
+                                    <span th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).CANCELADA}" class="px-2 py-0.5 bg-rose-50 border border-rose-200 text-rose-700 font-bold rounded-lg uppercase text-[10px]">Cancelada</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Cliente</span>
+                                    <span class="font-semibold text-slate-800" th:text="${s.nomeCliente}">Nome</span>
+                                    <span class="text-slate-500 block text-xs" th:text="${s.telefone}">telefone</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Data / Horário</span>
+                                    <span class="font-semibold text-slate-800" th:text="${#temporals.format(s.dataAtendimento, 'dd/MM/yyyy')} + ' às ' + ${s.horarioAtendimento}">Data</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Protocolo</span>
+                                    <span class="font-mono text-xs font-bold text-brand-600" th:text="${s.protocolo}">PROT</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                                <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider mb-1">Endereço</span>
+                                <span class="text-xs text-slate-700" th:text="${s.endereco}">Endereço</span>
+                            </div>
+
+                            <div class="mt-2" th:if="${s.descricao != null and !s.descricao.isEmpty()}">
+                                <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider mb-1">Descrição</span>
+                                <p class="text-xs text-slate-600" th:text="${s.descricao}">Descrição</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex items-center gap-3" th:if="${s.status == T(com.aep.servicos.model.SolicitacaoStatus).PENDENTE}">
+                        <form action="/protocolo/status" method="post" style="display:inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="hidden" name="id" th:value="${s.id}">
+                            <input type="hidden" name="status" value="EM_ANDAMENTO">
+                            <button type="submit" class="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-sky-500/10 flex items-center gap-1.5">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                <span>Aceitar Atendimento</span>
+                            </button>
+                        </form>
+                        <form action="/protocolo/status" method="post" style="display:inline" onsubmit="return confirm('Tem certeza que deseja recusar esta solicitação?')">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="hidden" name="id" th:value="${s.id}">
+                            <input type="hidden" name="status" value="CANCELADA">
+                            <button type="submit" class="px-5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5">
+                                <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                <span>Recusar</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        document.addEventListener("DOMContentLoaded", function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

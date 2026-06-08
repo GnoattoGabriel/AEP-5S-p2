@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Meus Serviços')}"></head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+
+    <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+    <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
+        
+        <div th:replace="~{fragments/layout :: header('Meus Serviços')}"></div>
+
+        <main class="p-6 md:p-8 flex-grow max-w-7xl mx-auto w-full">
+            
+            <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight">Meus Serviços</h3>
+                    <p class="text-slate-500 text-sm">Gerencie os serviços que você oferece no catálogo.</p>
+                </div>
+                <a href="/prestador/servicos/cadastrar" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-brand-500/10 flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Novo Serviço</span>
+                </a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(servicos)}" class="p-12 text-center rounded-2xl bg-white border border-slate-100 shadow-sm">
+                <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="briefcase" class="w-8 h-8"></i>
+                </div>
+                <h4 class="text-base font-bold text-slate-900 mb-1">Nenhum serviço cadastrado</h4>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto mb-6">Você ainda não cadastrou nenhum serviço no catálogo.</p>
+                <a href="/prestador/servicos/cadastrar" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl transition-all inline-flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Cadastrar Primeiro Serviço</span>
+                </a>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(servicos)}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div th:each="s : ${servicos}" class="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between overflow-hidden">
+                    <div class="p-6 pb-4 flex-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="px-2.5 py-1 bg-brand-50 text-brand-700 text-[11px] font-bold rounded-lg uppercase tracking-wider" th:text="${s.categoria}">CATEGORIA</span>
+                            <div class="flex items-center gap-1 text-amber-500 text-xs font-semibold">
+                                <i data-lucide="star" class="w-4 h-4 fill-amber-500 stroke-amber-500"></i>
+                                <span th:text="${s.avaliacao}">5.0</span>
+                            </div>
+                        </div>
+                        <h4 class="text-base font-bold text-slate-900 mb-1 leading-snug" th:text="${s.nome}">Nome do Serviço</h4>
+                        <div class="flex items-center gap-2 mt-3 text-slate-500">
+                            <i data-lucide="user-check" class="w-4 h-4 text-slate-400 shrink-0"></i>
+                            <span class="text-xs font-medium text-slate-600" th:text="'Responsável: Dr. Ricardo Silva'">Profissional</span>
+                        </div>
+                    </div>
+                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between gap-4 mt-auto">
+                        <div>
+                            <span class="text-[10px] text-slate-400 block font-medium uppercase tracking-wider">Valor</span>
+                            <span class="text-base font-extrabold text-slate-900" th:text="${#numbers.formatCurrency(s.valor)}">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        document.addEventListener("DOMContentLoaded", function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

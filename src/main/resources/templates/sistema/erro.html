@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Erro')}"></head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+    <!-- Main Content -->
+    <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
+        
+        <!-- Header -->
+        <div th:replace="~{fragments/layout :: header('Erro')}"></div>
+
+        <!-- Main Body -->
+        <main class="p-6 md:p-8 flex-grow max-w-3xl mx-auto w-full flex items-center justify-center">
+            
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 md:p-12 text-center max-w-md w-full">
+                <!-- Error Icon -->
+                <div class="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <i data-lucide="alert-circle" class="w-10 h-10 stroke-[2.5]"></i>
+                </div>
+                
+                <h4 class="text-2xl font-extrabold text-slate-900 mb-2">Ops! Algo deu errado</h4>
+                <p class="text-slate-500 text-sm max-w-sm mx-auto mb-8" th:text="${errorMessage}">Ocorreu um erro inesperado.</p>
+
+                <!-- Action buttons -->
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-3">
+                    <a href="/" class="w-full sm:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-brand-500/10 flex items-center justify-center gap-2">
+                        <i data-lucide="home" class="w-4 h-4"></i>
+                        <span>Voltar ao Início</span>
+                    </a>
+                    <a href="javascript:history.back()" class="w-full sm:w-auto px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Voltar</span>
+                    </a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toggle Sidebar Script -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

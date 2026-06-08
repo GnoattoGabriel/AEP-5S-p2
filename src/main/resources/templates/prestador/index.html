@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Painel do Prestador')}"></head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+
+    <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+    <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
+        
+        <div th:replace="~{fragments/layout :: header('Painel do Prestador')}"></div>
+
+        <main class="p-6 md:p-8 flex-grow max-w-7xl mx-auto w-full">
+            
+            <div class="mb-8">
+                <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight">Bem-vindo, <span th:text="${usuarioNome}">Dr. Ricardo Silva</span></h3>
+                <p class="text-slate-500 text-sm">Acompanhe suas solicitações e serviços cadastrados.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Solicitações</span>
+                        <div class="w-9 h-9 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center">
+                            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-2xl font-extrabold text-slate-900" th:text="${totalSolicitacoes}">0</h4>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pendentes</span>
+                        <div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                            <i data-lucide="clock" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-2xl font-extrabold text-amber-600" th:text="${pendentes}">0</h4>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Em Andamento</span>
+                        <div class="w-9 h-9 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center">
+                            <i data-lucide="play-circle" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-2xl font-extrabold text-sky-600" th:text="${emAndamento}">0</h4>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Serviços Ativos</span>
+                        <div class="w-9 h-9 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                            <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-2xl font-extrabold text-emerald-600" th:text="${totalServicos}">0</h4>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/prestador/servicos/cadastrar" class="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-brand-100 transition-all p-6 flex items-center gap-4 group">
+                    <div class="w-12 h-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center group-hover:bg-brand-600 group-hover:text-white transition-all">
+                        <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900">Cadastrar Serviço</h5>
+                        <p class="text-xs text-slate-500">Adicione um novo serviço ao catálogo</p>
+                    </div>
+                </a>
+
+                <a href="/prestador/solicitacoes" class="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-brand-100 transition-all p-6 flex items-center gap-4 group">
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-all">
+                        <i data-lucide="inbox" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900">Solicitações</h5>
+                        <p class="text-xs text-slate-500">Veja pedidos de serviços pendentes</p>
+                    </div>
+                </a>
+
+                <a href="/agenda" class="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-brand-100 transition-all p-6 flex items-center gap-4 group">
+                    <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-all">
+                        <i data-lucide="calendar" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900">Minha Agenda</h5>
+                        <p class="text-xs text-slate-500">Visualize seus atendimentos</p>
+                    </div>
+                </a>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

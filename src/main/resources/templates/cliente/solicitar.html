@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Solicitar Serviço')}"></head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+    <!-- Main Content -->
+    <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
+        
+        <!-- Header -->
+        <div th:replace="~{fragments/layout :: header('Solicitar Serviço')}"></div>
+
+        <!-- Main Body -->
+        <main class="p-6 md:p-8 flex-grow max-w-3xl mx-auto w-full">
+            
+            <!-- Page Intro -->
+            <div class="mb-8">
+                <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight">Nova Solicitação de Serviço</h3>
+                <p class="text-slate-500 text-sm">Preencha as informações abaixo para solicitar atendimento técnico ou reformas.</p>
+            </div>
+
+            <!-- Selected Service Info -->
+            <div th:if="${servicoSelecionado != null}" class="mb-6 p-5 rounded-2xl bg-gradient-to-r from-brand-50 to-indigo-50 border border-brand-100 shadow-sm">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <span class="text-[10px] text-brand-600 font-bold uppercase tracking-wider">Serviço Selecionado</span>
+                        <h4 class="text-lg font-extrabold text-slate-900 mt-1" th:text="${servicoSelecionado.nome}">Serviço</h4>
+                        <div class="flex items-center gap-3 mt-2 text-sm text-slate-600">
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="user-check" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <span th:text="${servicoSelecionado.profissional}">Profissional</span>
+                            </span>
+                            <span class="text-slate-300">|</span>
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="tag" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <span th:text="${servicoSelecionado.categoria}">Categoria</span>
+                            </span>
+                            <span class="text-slate-300">|</span>
+                            <span class="flex items-center gap-1 font-bold text-brand-600" th:text="${#numbers.formatCurrency(servicoSelecionado.valor)}">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Card Wrapper -->
+            <div id="solicitar-card" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 md:p-8">
+                
+                <form hx-post="/solicitar" hx-target="#solicitar-card" hx-swap="outerHTML">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <div class="space-y-6">
+                        
+                        <input type="hidden" name="servicoId" th:if="${servicoSelecionado != null}" th:value="${servicoSelecionado.id}">
+
+                        <!-- Client Name and Email in grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Nome -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nome Completo</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                        <i data-lucide="user" class="w-4 h-4"></i>
+                                    </span>
+                                    <input type="text" name="nomeCliente" required placeholder="Digite seu nome completo"
+                                           th:value="${usuarioNome}"
+                                           class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-slate-800">
+                                </div>
+                            </div>
+                            <!-- Telefone -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Telefone para Contato</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                        <i data-lucide="phone" class="w-4 h-4"></i>
+                                    </span>
+                                    <input type="tel" name="telefone" required placeholder="(XX) XXXXX-XXXX"
+                                           class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-slate-800">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Category Selector (same as provider's categories) -->
+                        <div>
+                            <label for="categoria" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Categoria do Serviço</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                    <i data-lucide="tag" class="w-4 h-4"></i>
+                                </span>
+                                <select id="categoria" name="categoria" required
+                                        class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-slate-800 appearance-none">
+                                    <option value="" disabled th:selected="${selectedCategoria == null}">Selecione uma categoria...</option>
+                                    <option th:each="c : ${categorias}" 
+                                            th:value="${c}" 
+                                            th:text="${c}"
+                                            th:selected="${c == selectedCategoria}">Categoria</option>
+                                </select>
+                                <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Valor -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Valor que irá Pagar (R$)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                    <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+                                </span>
+                                <input type="number" name="valor" required step="0.01" min="0" placeholder="Ex: 250.00"
+                                       th:value="${servicoSelecionado?.valor}"
+                                       th:disabled="${servicoSelecionado != null}"
+                                       class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-slate-800">
+                            </div>
+                            <p th:if="${servicoSelecionado != null}" class="text-xs text-slate-400 mt-1">Valor definido pelo prestador do serviço.</p>
+                        </div>
+
+                        <!-- Date, Time and Address -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Data -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Data Preferida</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                                    </span>
+                                    <input type="text" name="dataAtendimento" required 
+                                           placeholder="dd/mm/aaaa"
+                                           pattern="\d{2}/\d{2}/\d{4}"
+                                           inputmode="numeric"
+                                           th:value="${#temporals.format(#temporals.createToday().plusDays(1), 'dd/MM/yyyy')}"
+                                           class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-slate-800">
+                                </div>
+                            </div>
+                            <!-- Horario -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Horário Preferido</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                        <i data-lucide="clock" class="w-4 h-4"></i>
+                                    </span>
+                                    <input type="time" name="horarioAtendimento" value="09:00"
+                                           class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-slate-800">
+                                </div>
+                            </div>
+                            <!-- Endereco -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Endereço do Local</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                    </span>
+                                    <input type="text" name="endereco" required placeholder="Rua, número, bairro, cidade"
+                                           class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-slate-800">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Descricao -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Descrição Detalhada do Problema / Necessidade</label>
+                            <textarea name="descricao" rows="4" required placeholder="Descreva os detalhes do serviço que você precisa..."
+                                      class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-slate-800 resize-none"></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="pt-4 flex justify-end">
+                            <button type="submit" class="w-full sm:w-auto px-8 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                <span>Enviar Solicitação</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+
+            <!-- Success Card Fragment returned via HTMX POST -->
+            <!-- Declared in the same file to keep it simple and clean! -->
+            <div th:fragment="sucesso-card" th:if="${solicitacao != null}" id="sucesso-card" class="bg-white rounded-2xl border border-emerald-100 shadow-xl shadow-emerald-500/5 p-6 md:p-8 text-center animate-[fadeIn_0.5s_ease-out]">
+                <!-- Animated Circle Checkmark -->
+                <div class="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <i data-lucide="check-circle-2" class="w-10 h-10 stroke-[2.5]"></i>
+                </div>
+                
+                <h4 class="text-2xl font-extrabold text-slate-900 mb-2">Solicitação Criada com Sucesso!</h4>
+                <p class="text-slate-500 text-sm max-w-md mx-auto mb-6">Seu agendamento foi registrado e o protocolo abaixo foi gerado para acompanhamento.</p>
+                
+                <!-- Protocol Badge -->
+                <div class="inline-flex flex-col items-center gap-1.5 px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl mb-8 relative group">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Número de Protocolo</span>
+                    <span class="text-xl font-mono font-black text-brand-600 tracking-wider" th:text="${solicitacao.protocolo}">#PROT-20260607-1234</span>
+                </div>
+
+                <!-- Info summary -->
+                <div class="max-w-md mx-auto bg-slate-50 rounded-2xl border border-slate-100 text-left p-5 mb-8">
+                    <h5 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 pb-2 border-b border-slate-200">Resumo da Solicitação</h5>
+                    <div class="space-y-2 text-xs text-slate-600">
+                        <div class="flex justify-between"><span class="font-semibold text-slate-400">Cliente:</span> <span class="font-bold text-slate-800" th:text="${solicitacao.nomeCliente}">João</span></div>
+                        <div class="flex justify-between"><span class="font-semibold text-slate-400">Telefone:</span> <span class="font-bold text-slate-800" th:text="${solicitacao.telefone}">(11) 99999-8888</span></div>
+                        <div class="flex justify-between"><span class="font-semibold text-slate-400">Serviço:</span> <span class="font-bold text-slate-800" th:text="${solicitacao.servico.nome}">Limpeza</span></div>
+                        <div class="flex justify-between"><span class="font-semibold text-slate-400">Prestador:</span> <span class="font-bold text-slate-800" th:text="${solicitacao.servico.profissional}">Carlos</span></div>
+                        <div class="flex justify-between"><span class="font-semibold text-slate-400">Data Agendada:</span> <span class="font-bold text-slate-800" th:text="${#temporals.format(solicitacao.dataAtendimento, 'dd/MM/yyyy')}">08/06</span></div>
+                        <div class="flex justify-between"><span class="font-semibold text-slate-400">Horário:</span> <span class="font-bold text-slate-800" th:text="${#temporals.format(solicitacao.horarioAtendimento, 'HH:mm')}">09:00</span></div>
+                        <div class="flex justify-between"><span class="font-semibold text-slate-400">Status Inicial:</span> <span class="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 font-bold rounded-lg uppercase text-[10px]" th:text="${solicitacao.status}">PENDENTE</span></div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-3">
+                    <a th:href="@{/protocolo(codigo=${solicitacao.protocolo})}" class="w-full sm:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-brand-500/10 flex items-center justify-center gap-2">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        <span>Consultar Status</span>
+                    </a>
+                    <a href="/solicitar" class="w-full sm:w-auto px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Nova Solicitação</span>
+                    </a>
+                    <a href="/meus-pedidos" class="w-full sm:w-auto px-6 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="package" class="w-4 h-4"></i>
+                        <span>Meus Pedidos</span>
+                    </a>
+                </div>
+
+                <script>
+                    lucide.createIcons();
+                </script>
+            </div>
+
+        </main>
+    </div>
+
+        <!-- Toggle Sidebar Script -->
+        <script>
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('-translate-x-full');
+            }
+            
+            document.addEventListener("DOMContentLoaded", function() {
+                lucide.createIcons();
+                // Date mask (dd/MM/yyyy) for the preferred date field
+                const dateInput = document.querySelector('input[name="dataAtendimento"]');
+                if (dateInput) {
+                    dateInput.addEventListener('input', function () {
+                        let v = this.value.replace(/\D/g, '');
+                        if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+                        if (v.length > 5) v = v.slice(0, 5) + '/' + v.slice(5);
+                        if (v.length > 10) v = v.slice(0, 10);
+                        this.value = v;
+                    });
+                }
+            });
+        </script>
+</body>
+</html>
