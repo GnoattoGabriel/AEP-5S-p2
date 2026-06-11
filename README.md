@@ -48,6 +48,6 @@ Console H2 em `/h2-console` — JDBC: `jdbc:h2:mem:servicosdb`.
 
 | Email | Senha | Role |
 |---|---|---|
-| `joao.pedro@gmail.com` | `senha123` | CLIENTE |
-| `ricardo.silva@servicoja.com` | `senha123` | PRESTADOR |
+| `neymar.junior@gmail.com` | `senha123` | CLIENTE |
+| `gabrielgnoatto@gmail.com` | `senha123` | PRESTADOR |
 | `admin` | `admin` | CLIENTE ou PRESTADOR |
