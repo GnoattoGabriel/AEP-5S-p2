@@ -61,18 +61,7 @@ public class SolicitacaoService {
             String categoria, Long servicoId, Double valor,
             String usuarioEmail) {
 
-        if (nomeCliente == null || nomeCliente.isBlank()) {
-            throw new IllegalArgumentException("Nome do cliente é obrigatório");
-        }
-        if (telefone == null || telefone.isBlank()) {
-            throw new IllegalArgumentException("Telefone para contato é obrigatório");
-        }
-        if (descricao == null || descricao.isBlank()) {
-            throw new IllegalArgumentException("Descrição é obrigatória");
-        }
-        if (endereco == null || endereco.isBlank()) {
-            throw new IllegalArgumentException("Endereço é obrigatório");
-        }
+        validarCamposObrigatorios(nomeCliente, telefone, descricao, endereco);
 
         Servico servico;
         if (servicoId != null) {
@@ -265,6 +254,18 @@ public class SolicitacaoService {
             return Optional.empty();
         }
         return solicitacaoRepository.findByProtocolo(codigo.trim().toUpperCase());
+    }
+
+    private void validarCamposObrigatorios(String nomeCliente, String telefone,
+                                           String descricao, String endereco) {
+        if (nomeCliente == null || nomeCliente.isBlank())
+            throw new IllegalArgumentException("Nome do cliente é obrigatório");
+        if (telefone == null || telefone.isBlank())
+            throw new IllegalArgumentException("Telefone para contato é obrigatório");
+        if (descricao == null || descricao.isBlank())
+            throw new IllegalArgumentException("Descrição é obrigatória");
+        if (endereco == null || endereco.isBlank())
+            throw new IllegalArgumentException("Endereço é obrigatório");
     }
 
     public record DashboardDTO(long totalSolicitacoes, long pendentes,
