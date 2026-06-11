@@ -256,6 +256,10 @@ public class SolicitacaoService {
         return solicitacaoRepository.findByEmailClienteOrderByDataCriacaoDesc(email);
     }
 
+    public List<Solicitacao> listarDisponiveis() {
+        return solicitacaoRepository.findByEmailPrestadorIsNullAndStatus(SolicitacaoStatus.PENDENTE);
+    }
+
     public Optional<Solicitacao> consultarPorProtocolo(String codigo) {
         if (codigo == null || codigo.trim().isEmpty()) {
             return Optional.empty();

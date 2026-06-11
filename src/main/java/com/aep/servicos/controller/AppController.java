@@ -2,16 +2,11 @@ package com.aep.servicos.controller;
 
 import com.aep.servicos.model.Servico;
 import com.aep.servicos.model.Solicitacao;
-import com.aep.servicos.repository.ServicoRepository;
-import com.aep.servicos.repository.SolicitacaoRepository;
 import com.aep.servicos.service.ServicoService;
 import com.aep.servicos.service.SolicitacaoService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import com.aep.servicos.model.SolicitacaoStatus;
 
 @Controller
 public class AppController {
@@ -25,17 +20,11 @@ public class AppController {
     private static final String SOLICITACAO = "solicitacao";
     private static final String SOLICITACOES = "solicitacoes";
     private static final String SEARCHED = "searched";
-    private final ServicoRepository servicoRepository;
-    private final SolicitacaoRepository solicitacaoRepository;
     private final SolicitacaoService solicitacaoService;
     private final ServicoService servicoService;
 
-    public AppController(ServicoRepository servicoRepository,
-                         SolicitacaoRepository solicitacaoRepository,
-                         SolicitacaoService solicitacaoService,
+    public AppController(SolicitacaoService solicitacaoService,
                          ServicoService servicoService) {
-        this.servicoRepository = servicoRepository;
-        this.solicitacaoRepository = solicitacaoRepository;
         this.solicitacaoService = solicitacaoService;
         this.servicoService = servicoService;
     }
@@ -71,12 +60,10 @@ public class AppController {
             return "redirect:/";
         }
 
-        List<Servico> servicos = servicoRepository.searchServicos(categoria, query);
-        List<String> categorias = servicoRepository.findAllCategorias();
-
+        var dto = servicoService.pesquisarServicos(categoria, query);
         model.addAttribute(ACTIVE_PAGE, SERVICOS);
-        model.addAttribute(SERVICOS, servicos);
-        model.addAttribute("categorias", categorias);
+        model.addAttribute(SERVICOS, dto.servicos());
+        model.addAttribute("categorias", dto.categorias());
         model.addAttribute("selectedCategoria", categoria);
         model.addAttribute("searchQuery", query);
 
@@ -94,7 +81,7 @@ public class AppController {
         model.addAttribute(ACTIVE_PAGE, "solicitar");
 
         if (servicoId != null) {
-            var servicoOpt = servicoRepository.findById(servicoId);
+            var servicoOpt = servicoService.buscarPorId(servicoId);
             if (servicoOpt.isPresent()) {
                 model.addAttribute("servicoSelecionado", servicoOpt.get());
                 categoria = servicoOpt.get().getCategoria();
@@ -129,8 +116,7 @@ public class AppController {
     @GetMapping("/meus-pedidos")
     public String meusPedidos(Model model, @ModelAttribute("usuarioEmail") String usuarioEmail) {
         model.addAttribute(ACTIVE_PAGE, "meus-pedidos");
-        List<Solicitacao> solicitacoes = solicitacaoRepository.findByEmailClienteOrderByDataCriacaoDesc(usuarioEmail);
-        model.addAttribute(SOLICITACOES, solicitacoes);
+        model.addAttribute(SOLICITACOES, solicitacaoService.obterSolicitacoesCliente(usuarioEmail));
         return "cliente/meus-pedidos";
     }
 
@@ -189,8 +175,7 @@ public class AppController {
     @GetMapping("/prestador/servicos")
     public String prestadorServicos(Model model, @ModelAttribute("usuarioEmail") String usuarioEmail) {
         model.addAttribute(ACTIVE_PAGE, "prestador-servicos");
-        List<Servico> servicos = servicoRepository.findByEmailPrestadorOrderByNomeAsc(usuarioEmail);
-        model.addAttribute(SERVICOS, servicos);
+        model.addAttribute(SERVICOS, servicoService.listarPorEmailPrestador(usuarioEmail));
         return "prestador/servicos";
     }
 
@@ -216,9 +201,7 @@ public class AppController {
     @GetMapping("/prestador/disponiveis")
     public String prestadorDisponiveis(Model model) {
         model.addAttribute(ACTIVE_PAGE, "prestador-disponiveis");
-        List<Solicitacao> disponiveis = solicitacaoRepository
-                .findByEmailPrestadorIsNullAndStatus(SolicitacaoStatus.PENDENTE);
-        model.addAttribute(SOLICITACOES, disponiveis);
+        model.addAttribute(SOLICITACOES, solicitacaoService.listarDisponiveis());
         return "prestador/disponiveis";
     }
 
