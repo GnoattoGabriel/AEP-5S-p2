@@ -32,7 +32,8 @@ public class AppController {
     private static final String SOLICITACAO = "solicitacao";
     private static final String SOLICITACOES = "solicitacoes";
     private static final String SEARCHED = "searched";
-    private static final Set<SolicitacaoStatus> STATUS_VALIDOS = Set.of(SolicitacaoStatus.PENDENTE, SolicitacaoStatus.EM_ANDAMENTO, SolicitacaoStatus.FINALIZADA, SolicitacaoStatus.CANCELADA);
+    private static final Set<SolicitacaoStatus> STATUS_VALIDOS = Set.of(SolicitacaoStatus.PENDENTE,
+            SolicitacaoStatus.EM_ANDAMENTO, SolicitacaoStatus.FINALIZADA, SolicitacaoStatus.CANCELADA);
     private final ServicoRepository servicoRepository;
     private final SolicitacaoRepository solicitacaoRepository;
 
@@ -42,16 +43,21 @@ public class AppController {
     }
 
     @GetMapping("/")
-    public String index(Model model, @ModelAttribute("tipoUsuario") String tipoUsuario, @ModelAttribute("usuarioEmail") String usuarioEmail) {
+    public String index(Model model, @ModelAttribute("tipoUsuario") String tipoUsuario,
+            @ModelAttribute("usuarioEmail") String usuarioEmail) {
         model.addAttribute(ACTIVE_PAGE, "inicio");
 
         if (TIPO_PRESTADOR.equals(tipoUsuario)) {
-            List<Solicitacao> solicitacoes = solicitacaoRepository.findByEmailPrestadorAndStatusNot(usuarioEmail, SolicitacaoStatus.CANCELADA);
+            List<Solicitacao> solicitacoes = solicitacaoRepository.findByEmailPrestadorAndStatusNot(usuarioEmail,
+                    SolicitacaoStatus.CANCELADA);
             long pendentes = 0, emAndamento = 0, finalizadas = 0;
             for (Solicitacao s : solicitacoes) {
-                if (s.getStatus() == SolicitacaoStatus.PENDENTE) pendentes++;
-                else if (s.getStatus() == SolicitacaoStatus.EM_ANDAMENTO) emAndamento++;
-                else if (s.getStatus() == SolicitacaoStatus.FINALIZADA) finalizadas++;
+                if (s.getStatus() == SolicitacaoStatus.PENDENTE)
+                    pendentes++;
+                else if (s.getStatus() == SolicitacaoStatus.EM_ANDAMENTO)
+                    emAndamento++;
+                else if (s.getStatus() == SolicitacaoStatus.FINALIZADA)
+                    finalizadas++;
             }
             System.out.println(">>> Dashboard prestador: " + usuarioEmail + " | pendentes=" + pendentes);
             long totalServicos = servicoRepository.findByEmailPrestadorOrderByNomeAsc(usuarioEmail).size();
@@ -64,7 +70,8 @@ public class AppController {
             return "prestador/index";
         }
 
-        List<Solicitacao> minhasSolicitacoes = solicitacaoRepository.findByEmailClienteOrderByDataCriacaoDesc(usuarioEmail);
+        List<Solicitacao> minhasSolicitacoes = solicitacaoRepository
+                .findByEmailClienteOrderByDataCriacaoDesc(usuarioEmail);
         model.addAttribute("minhasSolicitacoes", minhasSolicitacoes);
         return "cliente/index";
     }
@@ -159,7 +166,7 @@ public class AppController {
             servicoRepository.save(servico);
         }
 
-        // Basic validation of the textual fields
+        // validacoes de campos obrigatórios
         if (nomeCliente == null || nomeCliente.isBlank()) {
             throw new IllegalArgumentException("Nome do cliente é obrigatório");
         }
@@ -282,18 +289,25 @@ public class AppController {
     public String agenda(Model model, @ModelAttribute("usuarioEmail") String usuarioEmail) {
         model.addAttribute(ACTIVE_PAGE, "agenda");
         LocalDate hoje = LocalDate.now();
-        // expose current date for consistent display in view
+        // mantem sempre a data atualizada através de magia negra
         model.addAttribute("dataHoje", hoje);
 
-        List<Solicitacao> atendimentosHoje = solicitacaoRepository.findByDataAtendimentoAndEmailPrestador(hoje, usuarioEmail)
-                .stream().filter(s -> s.getStatus() != SolicitacaoStatus.CANCELADA && s.getStatus() != SolicitacaoStatus.PENDENTE)
-                .sorted((a,b) -> b.getHorarioAtendimento().compareTo(a.getHorarioAtendimento()))
+        List<Solicitacao> atendimentosHoje = solicitacaoRepository
+                .findByDataAtendimentoAndEmailPrestador(hoje, usuarioEmail)
+                .stream()
+                .filter(s -> s.getStatus() != SolicitacaoStatus.CANCELADA
+                        && s.getStatus() != SolicitacaoStatus.PENDENTE)
+                .sorted((a, b) -> b.getHorarioAtendimento().compareTo(a.getHorarioAtendimento()))
                 .toList();
-        List<Solicitacao> proximosAtendimentos = solicitacaoRepository.findByDataAtendimentoAfterAndEmailPrestador(hoje, usuarioEmail)
-                .stream().filter(s -> s.getStatus() != SolicitacaoStatus.CANCELADA && s.getStatus() != SolicitacaoStatus.PENDENTE)
-                .sorted((a,b) -> a.getDataAtendimento().compareTo(b.getDataAtendimento()))
+        List<Solicitacao> proximosAtendimentos = solicitacaoRepository
+                .findByDataAtendimentoAfterAndEmailPrestador(hoje, usuarioEmail)
+                .stream()
+                .filter(s -> s.getStatus() != SolicitacaoStatus.CANCELADA
+                        && s.getStatus() != SolicitacaoStatus.PENDENTE)
+                .sorted((a, b) -> a.getDataAtendimento().compareTo(b.getDataAtendimento()))
                 .toList();
-        System.out.println(">>> Agenda: " + usuarioEmail + " | hoje=" + atendimentosHoje.size() + " | proximos=" + proximosAtendimentos.size());
+        System.out.println(">>> Agenda: " + usuarioEmail + " | hoje=" + atendimentosHoje.size() + " | proximos="
+                + proximosAtendimentos.size());
 
         model.addAttribute("hoje", atendimentosHoje);
         model.addAttribute("proximos", proximosAtendimentos);
@@ -340,7 +354,8 @@ public class AppController {
     @GetMapping("/prestador/disponiveis")
     public String prestadorDisponiveis(Model model) {
         model.addAttribute(ACTIVE_PAGE, "prestador-disponiveis");
-        List<Solicitacao> disponiveis = solicitacaoRepository.findByEmailPrestadorIsNullAndStatus(SolicitacaoStatus.PENDENTE);
+        List<Solicitacao> disponiveis = solicitacaoRepository
+                .findByEmailPrestadorIsNullAndStatus(SolicitacaoStatus.PENDENTE);
         model.addAttribute(SOLICITACOES, disponiveis);
         return "prestador/disponiveis";
     }
@@ -370,26 +385,33 @@ public class AppController {
             Model model,
             @ModelAttribute("usuarioEmail") String usuarioEmail) {
         model.addAttribute(ACTIVE_PAGE, "prestador-solicitacoes");
-        List<Solicitacao> todas = solicitacaoRepository.findByEmailPrestadorAndStatusNot(usuarioEmail, SolicitacaoStatus.CANCELADA);
+        List<Solicitacao> todas = solicitacaoRepository.findByEmailPrestadorAndStatusNot(usuarioEmail,
+                SolicitacaoStatus.CANCELADA);
 
         Comparator<Solicitacao> comparator;
         switch (ordenar) {
             case "data_asc":
-                comparator = Comparator.comparing(Solicitacao::getDataAtendimento, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(Solicitacao::getHorarioAtendimento, Comparator.nullsLast(Comparator.naturalOrder()));
+                comparator = Comparator
+                        .comparing(Solicitacao::getDataAtendimento, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(Solicitacao::getHorarioAtendimento,
+                                Comparator.nullsLast(Comparator.naturalOrder()));
                 break;
             case "nome_asc":
                 comparator = Comparator.comparing(Solicitacao::getNomeCliente, String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(Solicitacao::getDataAtendimento, Comparator.nullsLast(Comparator.reverseOrder()));
+                        .thenComparing(Solicitacao::getDataAtendimento,
+                                Comparator.nullsLast(Comparator.reverseOrder()));
                 break;
             case "nome_desc":
                 comparator = Comparator.comparing(Solicitacao::getNomeCliente, String.CASE_INSENSITIVE_ORDER).reversed()
-                        .thenComparing(Solicitacao::getDataAtendimento, Comparator.nullsLast(Comparator.reverseOrder()));
+                        .thenComparing(Solicitacao::getDataAtendimento,
+                                Comparator.nullsLast(Comparator.reverseOrder()));
                 break;
             case ORDENAR_DATA_DESC:
             default:
-                comparator = Comparator.comparing(Solicitacao::getDataAtendimento, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Solicitacao::getHorarioAtendimento, Comparator.nullsLast(Comparator.reverseOrder()));
+                comparator = Comparator
+                        .comparing(Solicitacao::getDataAtendimento, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(Solicitacao::getHorarioAtendimento,
+                                Comparator.nullsLast(Comparator.reverseOrder()));
                 break;
         }
 
@@ -403,21 +425,25 @@ public class AppController {
     }
 
     @GetMapping("/notificacoes")
-    public String notificacoes(Model model, @ModelAttribute("tipoUsuario") String tipoUsuario, @ModelAttribute("usuarioEmail") String usuarioEmail) {
+    public String notificacoes(Model model, @ModelAttribute("tipoUsuario") String tipoUsuario,
+            @ModelAttribute("usuarioEmail") String usuarioEmail) {
         String tipo = tipoUsuario;
 
         if (TIPO_PRESTADOR.equals(tipo)) {
-            List<Solicitacao> todas = solicitacaoRepository.findByEmailPrestadorAndStatusNot(usuarioEmail, SolicitacaoStatus.CANCELADA);
+            List<Solicitacao> todas = solicitacaoRepository.findByEmailPrestadorAndStatusNot(usuarioEmail,
+                    SolicitacaoStatus.CANCELADA);
             List<Solicitacao> pendentes = new java.util.ArrayList<>();
             for (Solicitacao s : todas) {
                 if (s.getStatus() == SolicitacaoStatus.PENDENTE) {
                     pendentes.add(s);
-                    if (pendentes.size() == 5) break;
+                    if (pendentes.size() == 5)
+                        break;
                 }
             }
             long countPendentes = 0;
             for (Solicitacao s : todas) {
-                if (s.getStatus() == SolicitacaoStatus.PENDENTE) countPendentes++;
+                if (s.getStatus() == SolicitacaoStatus.PENDENTE)
+                    countPendentes++;
             }
             model.addAttribute("pendentes", pendentes);
             model.addAttribute("countPendentes", countPendentes);
