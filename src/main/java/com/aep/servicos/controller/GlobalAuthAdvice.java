@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 @ControllerAdvice
 public class GlobalAuthAdvice {
 
+    private static final String ANONYMOUS_USER = "anonymousUser";
+
     @ModelAttribute("tipoUsuario")
     public String tipoUsuario() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals(ANONYMOUS_USER)) {
             return null;
         }
         Object principal = auth.getPrincipal();
@@ -29,7 +31,7 @@ public class GlobalAuthAdvice {
     @ModelAttribute("usuarioNome")
     public String usuarioNome() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals(ANONYMOUS_USER)) {
             return null;
         }
         Object principal = auth.getPrincipal();
@@ -42,7 +44,7 @@ public class GlobalAuthAdvice {
     @ModelAttribute("usuarioEmail")
     public String usuarioEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals(ANONYMOUS_USER)) {
             return null;
         }
         Object principal = auth.getPrincipal();

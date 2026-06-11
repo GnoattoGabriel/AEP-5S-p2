@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ThreadLocalRandom;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import com.aep.servicos.model.SolicitacaoStatus;
@@ -65,12 +66,12 @@ public class Solicitacao {
         if (this.protocolo == null) {
             // Gera protocolo tipo: #PROT-YYYYMMDD-XXXX (4 digitos aleatorios)
             String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-            int randomNum = 1000 + (int) (Math.random() * 9000); // 1000 a 9999
+            int randomNum = 1000 + ThreadLocalRandom.current().nextInt(9000); // 1000 a 9999
             this.protocolo = "#PROT-" + dateStr + "-" + randomNum;
         }
         if (this.horarioAtendimento == null) {
             // Horário padrão aleatório entre 08:00 e 17:00
-            int hour = 8 + (int) (Math.random() * 10);
+            int hour = 8 + ThreadLocalRandom.current().nextInt(10);
             this.horarioAtendimento = LocalTime.of(hour, 0);
         }
     }

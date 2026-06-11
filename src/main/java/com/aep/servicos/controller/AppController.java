@@ -23,6 +23,15 @@ import com.aep.servicos.model.SolicitacaoStatus;
 @Controller
 public class AppController {
 
+    private static final String ACTIVE_PAGE = "activePage";
+    private static final String TIPO_PRESTADOR = "PRESTADOR";
+    private static final String ORDENAR_DATA_DESC = "data_desc";
+    private static final String CATEGORIA_OUTROS = "Outros";
+    private static final String SERVICOS = "servicos";
+    private static final String PATH_SERVICOS = "/servicos";
+    private static final String SOLICITACAO = "solicitacao";
+    private static final String SOLICITACOES = "solicitacoes";
+    private static final String SEARCHED = "searched";
     private static final Set<SolicitacaoStatus> STATUS_VALIDOS = Set.of(SolicitacaoStatus.PENDENTE, SolicitacaoStatus.EM_ANDAMENTO, SolicitacaoStatus.FINALIZADA, SolicitacaoStatus.CANCELADA);
     private final ServicoRepository servicoRepository;
     private final SolicitacaoRepository solicitacaoRepository;
@@ -34,9 +43,9 @@ public class AppController {
 
     @GetMapping("/")
     public String index(Model model, @ModelAttribute("tipoUsuario") String tipoUsuario, @ModelAttribute("usuarioEmail") String usuarioEmail) {
-        model.addAttribute("activePage", "inicio");
+        model.addAttribute(ACTIVE_PAGE, "inicio");
 
-        if ("PRESTADOR".equals(tipoUsuario)) {
+        if (TIPO_PRESTADOR.equals(tipoUsuario)) {
             List<Solicitacao> solicitacoes = solicitacaoRepository.findByEmailPrestadorAndStatusNot(usuarioEmail, SolicitacaoStatus.CANCELADA);
             long pendentes = 0, emAndamento = 0, finalizadas = 0;
             for (Solicitacao s : solicitacoes) {
@@ -60,7 +69,7 @@ public class AppController {
         return "cliente/index";
     }
 
-    @GetMapping("/servicos")
+    @GetMapping(PATH_SERVICOS)
     public String listaServicos(
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String query,
@@ -68,15 +77,15 @@ public class AppController {
             Model model,
             @ModelAttribute("tipoUsuario") String tipoUsuario) {
 
-        if ("PRESTADOR".equals(tipoUsuario)) {
+        if (TIPO_PRESTADOR.equals(tipoUsuario)) {
             return "redirect:/";
         }
 
         List<Servico> servicos = servicoRepository.searchServicos(categoria, query);
         List<String> categorias = servicoRepository.findAllCategorias();
 
-        model.addAttribute("activePage", "servicos");
-        model.addAttribute("servicos", servicos);
+        model.addAttribute(ACTIVE_PAGE, SERVICOS);
+        model.addAttribute(SERVICOS, servicos);
         model.addAttribute("categorias", categorias);
         model.addAttribute("selectedCategoria", categoria);
         model.addAttribute("searchQuery", query);
@@ -92,7 +101,7 @@ public class AppController {
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) Long servicoId,
             Model model) {
-        model.addAttribute("activePage", "solicitar");
+        model.addAttribute(ACTIVE_PAGE, "solicitar");
 
         if (servicoId != null) {
             Optional<Servico> servicoOpt = servicoRepository.findById(servicoId);
@@ -105,10 +114,10 @@ public class AppController {
 
         List<String> categorias = servicoRepository.findAllCategorias();
         if (categorias.isEmpty()) {
-            categorias = List.of("Reformas", "Assistência Técnica", "Limpeza", "Design", "Pet", "Outros");
-        } else if (!categorias.contains("Outros")) {
+            categorias = List.of("Reformas", "Assistência Técnica", "Limpeza", "Design", "Pet", CATEGORIA_OUTROS);
+        } else if (!categorias.contains(CATEGORIA_OUTROS)) {
             categorias = new java.util.ArrayList<>(categorias);
-            categorias.add("Outros");
+            categorias.add(CATEGORIA_OUTROS);
         }
         model.addAttribute("categorias", categorias);
         model.addAttribute("selectedCategoria", categoria);
@@ -196,15 +205,15 @@ public class AppController {
         solicitacaoRepository.save(solicitacao);
         System.out.println(">>> SOLICITACAO CRIADA: " + solicitacao.getProtocolo() + " | Cliente: " + nomeCliente);
 
-        model.addAttribute("solicitacao", solicitacao);
+        model.addAttribute(SOLICITACAO, solicitacao);
         return "cliente/solicitar :: sucesso-card";
     }
 
     @GetMapping("/meus-pedidos")
     public String meusPedidos(Model model, @ModelAttribute("usuarioEmail") String usuarioEmail) {
-        model.addAttribute("activePage", "meus-pedidos");
+        model.addAttribute(ACTIVE_PAGE, "meus-pedidos");
         List<Solicitacao> solicitacoes = solicitacaoRepository.findByEmailClienteOrderByDataCriacaoDesc(usuarioEmail);
-        model.addAttribute("solicitacoes", solicitacoes);
+        model.addAttribute(SOLICITACOES, solicitacoes);
         return "cliente/meus-pedidos";
     }
 
@@ -214,15 +223,15 @@ public class AppController {
             @RequestHeader(value = "HX-Request", required = false) String hxRequest,
             Model model) {
 
-        model.addAttribute("activePage", "protocolo");
+        model.addAttribute(ACTIVE_PAGE, "protocolo");
         model.addAttribute("codigo", codigo);
 
         if (codigo != null && !codigo.trim().isEmpty()) {
             Optional<Solicitacao> solicitacaoOpt = solicitacaoRepository.findByProtocolo(codigo.trim().toUpperCase());
-            model.addAttribute("solicitacao", solicitacaoOpt.orElse(null));
-            model.addAttribute("searched", true);
+            model.addAttribute(SOLICITACAO, solicitacaoOpt.orElse(null));
+            model.addAttribute(SEARCHED, true);
         } else {
-            model.addAttribute("searched", false);
+            model.addAttribute(SEARCHED, false);
         }
 
         if (hxRequest != null) {
@@ -257,8 +266,8 @@ public class AppController {
         System.out.println(">>> STATUS ATUALIZADO: " + solicitacao.getProtocolo() + " -> " + newStatus);
 
         if (hxRequest != null) {
-            model.addAttribute("solicitacao", solicitacao);
-            model.addAttribute("searched", true);
+            model.addAttribute(SOLICITACAO, solicitacao);
+            model.addAttribute(SEARCHED, true);
             model.addAttribute("codigo", solicitacao.getProtocolo());
             return "cliente/protocolo :: detalhe-card";
         }
@@ -271,7 +280,7 @@ public class AppController {
 
     @GetMapping("/agenda")
     public String agenda(Model model, @ModelAttribute("usuarioEmail") String usuarioEmail) {
-        model.addAttribute("activePage", "agenda");
+        model.addAttribute(ACTIVE_PAGE, "agenda");
         LocalDate hoje = LocalDate.now();
         // expose current date for consistent display in view
         model.addAttribute("dataHoje", hoje);
@@ -293,15 +302,15 @@ public class AppController {
 
     @GetMapping("/prestador/servicos")
     public String prestadorServicos(Model model, @ModelAttribute("usuarioEmail") String usuarioEmail) {
-        model.addAttribute("activePage", "prestador-servicos");
+        model.addAttribute(ACTIVE_PAGE, "prestador-servicos");
         List<Servico> servicos = servicoRepository.findByEmailPrestadorOrderByNomeAsc(usuarioEmail);
-        model.addAttribute("servicos", servicos);
+        model.addAttribute(SERVICOS, servicos);
         return "prestador/servicos";
     }
 
     @GetMapping("/prestador/servicos/cadastrar")
     public String prestadorServicoForm(Model model) {
-        model.addAttribute("activePage", "prestador-cadastrar");
+        model.addAttribute(ACTIVE_PAGE, "prestador-cadastrar");
         model.addAttribute("servico", new Servico());
         return "prestador/servico-form";
     }
@@ -330,9 +339,9 @@ public class AppController {
 
     @GetMapping("/prestador/disponiveis")
     public String prestadorDisponiveis(Model model) {
-        model.addAttribute("activePage", "prestador-disponiveis");
+        model.addAttribute(ACTIVE_PAGE, "prestador-disponiveis");
         List<Solicitacao> disponiveis = solicitacaoRepository.findByEmailPrestadorIsNullAndStatus(SolicitacaoStatus.PENDENTE);
-        model.addAttribute("solicitacoes", disponiveis);
+        model.addAttribute(SOLICITACOES, disponiveis);
         return "prestador/disponiveis";
     }
 
@@ -357,10 +366,10 @@ public class AppController {
 
     @GetMapping("/prestador/solicitacoes")
     public String prestadorSolicitacoes(
-            @RequestParam(defaultValue = "data_desc") String ordenar,
+            @RequestParam(defaultValue = ORDENAR_DATA_DESC) String ordenar,
             Model model,
             @ModelAttribute("usuarioEmail") String usuarioEmail) {
-        model.addAttribute("activePage", "prestador-solicitacoes");
+        model.addAttribute(ACTIVE_PAGE, "prestador-solicitacoes");
         List<Solicitacao> todas = solicitacaoRepository.findByEmailPrestadorAndStatusNot(usuarioEmail, SolicitacaoStatus.CANCELADA);
 
         Comparator<Solicitacao> comparator;
@@ -377,7 +386,7 @@ public class AppController {
                 comparator = Comparator.comparing(Solicitacao::getNomeCliente, String.CASE_INSENSITIVE_ORDER).reversed()
                         .thenComparing(Solicitacao::getDataAtendimento, Comparator.nullsLast(Comparator.reverseOrder()));
                 break;
-            case "data_desc":
+            case ORDENAR_DATA_DESC:
             default:
                 comparator = Comparator.comparing(Solicitacao::getDataAtendimento, Comparator.nullsLast(Comparator.reverseOrder()))
                         .thenComparing(Solicitacao::getHorarioAtendimento, Comparator.nullsLast(Comparator.reverseOrder()));
@@ -388,7 +397,7 @@ public class AppController {
                 .filter(s -> s.getStatus() != SolicitacaoStatus.CANCELADA)
                 .sorted(comparator)
                 .toList();
-        model.addAttribute("solicitacoes", solicitacoes);
+        model.addAttribute(SOLICITACOES, solicitacoes);
         model.addAttribute("ordenar", ordenar);
         return "prestador/solicitacoes";
     }
@@ -397,7 +406,7 @@ public class AppController {
     public String notificacoes(Model model, @ModelAttribute("tipoUsuario") String tipoUsuario, @ModelAttribute("usuarioEmail") String usuarioEmail) {
         String tipo = tipoUsuario;
 
-        if ("PRESTADOR".equals(tipo)) {
+        if (TIPO_PRESTADOR.equals(tipo)) {
             List<Solicitacao> todas = solicitacaoRepository.findByEmailPrestadorAndStatusNot(usuarioEmail, SolicitacaoStatus.CANCELADA);
             List<Solicitacao> pendentes = new java.util.ArrayList<>();
             for (Solicitacao s : todas) {

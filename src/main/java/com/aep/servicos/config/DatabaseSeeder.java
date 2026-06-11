@@ -19,6 +19,12 @@ import java.util.List;
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
+    private static final String PRESTADOR_EMAIL = "gabrielgnoatto@gmail.com";
+    private static final String ADMIN_EMAIL = "admin";
+    private static final String ADMIN_CLIENTE_NOME = "Admin Cliente";
+    private static final String LOG_SEED_PREFIX = ">> Banco de dados semeado com ";
+    private static final String CATEGORIA_REFORMAS = "Reformas";
+
     private final ServicoRepository servicoRepository;
     private final SolicitacaoRepository solicitacaoRepository;
     private final UsuarioRepository usuarioRepository;
@@ -36,29 +42,29 @@ public class DatabaseSeeder implements CommandLineRunner {
         if (usuarioRepository.count() == 0) {
             List<Usuario> usuarios = Arrays.asList(
                 Usuario.builder().nome("João Pedro Santos").email("joao.pedro@gmail.com").senha(passwordEncoder.encode("senha123")).role("ROLE_CLIENTE").build(),
-                Usuario.builder().nome("Dr. Ricardo Silva").email("ricardo.silva@servicoja.com").senha(passwordEncoder.encode("senha123")).role("ROLE_PRESTADOR").build(),
-                Usuario.builder().nome("Admin Cliente").email("admin").senha(passwordEncoder.encode("admin")).role("ROLE_CLIENTE").build(),
-                Usuario.builder().nome("Admin Prestador").email("admin").senha(passwordEncoder.encode("admin")).role("ROLE_PRESTADOR").build()
+                Usuario.builder().nome("Dr. Ricardo Silva").email(PRESTADOR_EMAIL).senha(passwordEncoder.encode("senha123")).role("ROLE_PRESTADOR").build(),
+                Usuario.builder().nome(ADMIN_CLIENTE_NOME).email(ADMIN_EMAIL).senha(passwordEncoder.encode(ADMIN_EMAIL)).role("ROLE_CLIENTE").build(),
+                Usuario.builder().nome("Admin Prestador").email(ADMIN_EMAIL).senha(passwordEncoder.encode(ADMIN_EMAIL)).role("ROLE_PRESTADOR").build()
             );
             usuarioRepository.saveAll(usuarios);
-            System.out.println(">> Banco de dados semeado com " + usuarios.size() + " usuários.");
+            System.out.println(LOG_SEED_PREFIX + usuarios.size() + " usuários.");
         }
 
         if (servicoRepository.count() == 0) {
             // Seed Servicos
             List<Servico> servicos = Arrays.asList(
-                Servico.builder().nome("Pintura Residencial e Comercial").categoria("Reformas").profissional("Carlos Silva").avaliacao(4.8).valor(350.0).emailPrestador("ricardo.silva@servicoja.com").build(),
-                Servico.builder().nome("Limpeza de Ar Condicionado").categoria("Assistência Técnica").profissional("Mariana Souza").avaliacao(4.9).valor(120.0).emailPrestador("ricardo.silva@servicoja.com").build(),
-                Servico.builder().nome("Instalação e Manutenção Elétrica").categoria("Reformas").profissional("Julio Nogueira").avaliacao(4.7).valor(220.0).emailPrestador("ricardo.silva@servicoja.com").build(),
-                Servico.builder().nome("Formatação e Limpeza de PC/Notebook").categoria("Assistência Técnica").profissional("Felipe Costa").avaliacao(4.6).valor(180.0).emailPrestador("ricardo.silva@servicoja.com").build(),
-                Servico.builder().nome("Limpeza Residencial Completa (Faxina)").categoria("Limpeza").profissional("Ana Maria").avaliacao(4.9).valor(160.0).emailPrestador("ricardo.silva@servicoja.com").build(),
-                Servico.builder().nome("Jardinagem, Poda e Paisagismo").categoria("Reformas").profissional("Roberto Alves").avaliacao(4.5).valor(250.0).emailPrestador("ricardo.silva@servicoja.com").build(),
-                Servico.builder().nome("Consultoria de Design de Interiores").categoria("Design").profissional("Paula Mendes").avaliacao(5.0).valor(600.0).emailPrestador("ricardo.silva@servicoja.com").build(),
-                Servico.builder().nome("Adestramento e Comportamento Canino").categoria("Pet").profissional("Lucas Rocha").avaliacao(4.8).valor(130.0).emailPrestador("ricardo.silva@servicoja.com").build()
+                Servico.builder().nome("Pintura Residencial e Comercial").categoria(CATEGORIA_REFORMAS).profissional("Carlos Silva").avaliacao(4.8).valor(350.0).emailPrestador(PRESTADOR_EMAIL).build(),
+                Servico.builder().nome("Limpeza de Ar Condicionado").categoria("Assistência Técnica").profissional("Mariana Souza").avaliacao(4.9).valor(120.0).emailPrestador(PRESTADOR_EMAIL).build(),
+                Servico.builder().nome("Instalação e Manutenção Elétrica").categoria(CATEGORIA_REFORMAS).profissional("Julio Nogueira").avaliacao(4.7).valor(220.0).emailPrestador(PRESTADOR_EMAIL).build(),
+                Servico.builder().nome("Formatação e Limpeza de PC/Notebook").categoria("Assistência Técnica").profissional("Felipe Costa").avaliacao(4.6).valor(180.0).emailPrestador(PRESTADOR_EMAIL).build(),
+                Servico.builder().nome("Limpeza Residencial Completa (Faxina)").categoria("Limpeza").profissional("Ana Maria").avaliacao(4.9).valor(160.0).emailPrestador(PRESTADOR_EMAIL).build(),
+                Servico.builder().nome("Jardinagem, Poda e Paisagismo").categoria(CATEGORIA_REFORMAS).profissional("Roberto Alves").avaliacao(4.5).valor(250.0).emailPrestador(PRESTADOR_EMAIL).build(),
+                Servico.builder().nome("Consultoria de Design de Interiores").categoria("Design").profissional("Paula Mendes").avaliacao(5.0).valor(600.0).emailPrestador(PRESTADOR_EMAIL).build(),
+                Servico.builder().nome("Adestramento e Comportamento Canino").categoria("Pet").profissional("Lucas Rocha").avaliacao(4.8).valor(130.0).emailPrestador(PRESTADOR_EMAIL).build()
             );
 
             servicoRepository.saveAll(servicos);
-            System.out.println(">> Banco de dados semeado com " + servicos.size() + " serviços.");
+            System.out.println(LOG_SEED_PREFIX + servicos.size() + " serviços.");
 
             // Pegando alguns servicos para as solicitacoes
             Servico s1 = servicoRepository.findAll().get(0); // Pintura
@@ -143,13 +149,13 @@ public class DatabaseSeeder implements CommandLineRunner {
             );
 
             solicitacaoRepository.saveAll(solicitacoes);
-            System.out.println(">> Banco de dados semeado com " + solicitacoes.size() + " solicitações iniciais.");
+            System.out.println(LOG_SEED_PREFIX + solicitacoes.size() + " solicitações iniciais.");
 
             // Seed client posts (para job board do prestador)
             Servico clientPost1 = Servico.builder()
                     .nome("Solicitação: Limpeza")
                     .categoria("Limpeza")
-                    .profissional("Admin Cliente")
+                    .profissional(ADMIN_CLIENTE_NOME)
                     .valor(0.0)
                     .avaliacao(0.0)
                     .emailPrestador(null)
@@ -158,8 +164,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             Servico clientPost2 = Servico.builder()
                     .nome("Solicitação: Reformas")
-                    .categoria("Reformas")
-                    .profissional("Admin Cliente")
+                    .categoria(CATEGORIA_REFORMAS)
+                    .profissional(ADMIN_CLIENTE_NOME)
                     .valor(0.0)
                     .avaliacao(0.0)
                     .emailPrestador(null)
@@ -168,8 +174,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             List<Solicitacao> clientPosts = Arrays.asList(
                 Solicitacao.builder()
-                    .nomeCliente("Admin Cliente")
-                    .emailCliente("admin")
+                    .nomeCliente(ADMIN_CLIENTE_NOME)
+                    .emailCliente(ADMIN_EMAIL)
                     .telefone("(11) 99999-0000")
                     .descricao("Preciso de uma faxina completa no apartamento, 3 quartos, sala, cozinha e 2 banheiros.")
                     .endereco("Rua Exemplo, 123 - Centro")
@@ -180,8 +186,8 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .emailPrestador(null)
                     .build(),
                 Solicitacao.builder()
-                    .nomeCliente("Admin Cliente")
-                    .emailCliente("admin")
+                    .nomeCliente(ADMIN_CLIENTE_NOME)
+                    .emailCliente(ADMIN_EMAIL)
                     .telefone("(11) 98888-0000")
                     .descricao("Quero reformar o banheiro: trocar revestimento, pia e vaso sanitário.")
                     .endereco("Av. Principal, 456 - Jardim América")
@@ -194,7 +200,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             );
 
             solicitacaoRepository.saveAll(clientPosts);
-            System.out.println(">> Banco de dados semeado com " + clientPosts.size() + " client posts.");
+            System.out.println(LOG_SEED_PREFIX + clientPosts.size() + " client posts.");
         }
     }
 }

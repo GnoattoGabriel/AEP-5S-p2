@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class AuthController {
 
+    private static final String VIEW_CADASTRO = "sistema/cadastro";
+
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -27,7 +29,7 @@ public class AuthController {
 
     @GetMapping("/cadastro")
     public String cadastro() {
-        return "sistema/cadastro";
+        return VIEW_CADASTRO;
     }
 
     @PostMapping("/cadastro")
@@ -41,27 +43,27 @@ public class AuthController {
 
         if (nome == null || nome.trim().length() < 3) {
             model.addAttribute("erro", "Nome deve ter pelo menos 3 caracteres.");
-            return "sistema/cadastro";
+            return VIEW_CADASTRO;
         }
-        if (email == null || !email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+        if (email == null || !email.matches("^[\\w.\\-]+@[\\w.\\-]+\\.[a-zA-Z]{2,}$")) {
             model.addAttribute("erro", "Email inválido.");
-            return "sistema/cadastro";
+            return VIEW_CADASTRO;
         }
         if (senha == null || senha.length() < 6) {
             model.addAttribute("erro", "Senha deve ter pelo menos 6 caracteres.");
-            return "sistema/cadastro";
+            return VIEW_CADASTRO;
         }
         if (!senha.equals(confirmarSenha)) {
             model.addAttribute("erro", "Senhas não conferem.");
-            return "sistema/cadastro";
+            return VIEW_CADASTRO;
         }
         if (!role.equals("ROLE_CLIENTE") && !role.equals("ROLE_PRESTADOR")) {
             model.addAttribute("erro", "Tipo de conta inválido.");
-            return "sistema/cadastro";
+            return VIEW_CADASTRO;
         }
         if (usuarioRepository.existsByEmailAndRole(email.trim().toLowerCase(), role)) {
             model.addAttribute("erro", "Este email já está cadastrado com este tipo de conta.");
-            return "sistema/cadastro";
+            return VIEW_CADASTRO;
         }
 
         Usuario usuario = Usuario.builder()

@@ -8,6 +8,7 @@ class ServicosApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// Verifica se o contexto da aplicação Spring inicializa corretamente
 	}
 
 }
