@@ -1,8 +1,6 @@
 package com.aep.servicos.controller;
 
-import com.aep.servicos.model.Usuario;
-import com.aep.servicos.repository.UsuarioRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.aep.servicos.service.AuthService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,12 +12,10 @@ public class AuthController {
 
     private static final String VIEW_CADASTRO = "sistema/cadastro";
 
-    private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    public AuthController(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
-        this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = passwordEncoder;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @GetMapping("/login")
@@ -41,40 +37,11 @@ public class AuthController {
             @RequestParam String role,
             Model model) {
 
-        if (nome == null || nome.trim().length() < 3) {
-            model.addAttribute("erro", "Nome deve ter pelo menos 3 caracteres.");
+        String erro = authService.cadastrar(nome, email, senha, confirmarSenha, role);
+        if (erro != null) {
+            model.addAttribute("erro", erro);
             return VIEW_CADASTRO;
         }
-        if (email == null || !email.matches("^[\\w.\\-]+@[\\w.\\-]+\\.[a-zA-Z]{2,}$")) {
-            model.addAttribute("erro", "Email inválido.");
-            return VIEW_CADASTRO;
-        }
-        if (senha == null || senha.length() < 6) {
-            model.addAttribute("erro", "Senha deve ter pelo menos 6 caracteres.");
-            return VIEW_CADASTRO;
-        }
-        if (!senha.equals(confirmarSenha)) {
-            model.addAttribute("erro", "Senhas não conferem.");
-            return VIEW_CADASTRO;
-        }
-        if (!role.equals("ROLE_CLIENTE") && !role.equals("ROLE_PRESTADOR")) {
-            model.addAttribute("erro", "Tipo de conta inválido.");
-            return VIEW_CADASTRO;
-        }
-        if (usuarioRepository.existsByEmailAndRole(email.trim().toLowerCase(), role)) {
-            model.addAttribute("erro", "Este email já está cadastrado com este tipo de conta.");
-            return VIEW_CADASTRO;
-        }
-
-        Usuario usuario = Usuario.builder()
-                .nome(nome.trim())
-                .email(email.trim().toLowerCase())
-                .senha(passwordEncoder.encode(senha))
-                .role(role)
-                .build();
-
-        usuarioRepository.save(usuario);
-
         return "redirect:/login?cadastro=ok";
     }
 }
