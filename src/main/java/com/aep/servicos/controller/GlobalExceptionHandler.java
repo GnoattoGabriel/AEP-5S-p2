@@ -22,10 +22,4 @@ public class GlobalExceptionHandler {
         return "sistema/erro";
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public String handleGeneral(Exception ex, Model model) {
-//        model.addAttribute("errorMessage", "Ocorreu um erro inesperado. Tente novamente.");
-//        model.addAttribute("activePage", "erro");
-//        return "sistema/erro";
-//    }
 }
